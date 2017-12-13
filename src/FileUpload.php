@@ -166,7 +166,7 @@ class FileUpload
     {
         if (!empty($_POST['path'])) $this->path = $_POST['path'];
         if (!empty($_POST['autoSub'])) $this->autoSub = $_POST['autoSub'];
-        if (!empty($_POST['host'])) $this->autoSub = $_POST['host'];
+        if (!empty($_POST['host'])) $this->host = $_POST['host'];
 
         if (!$this->createDir()) {
             return false;
