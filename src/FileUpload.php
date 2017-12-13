@@ -166,6 +166,7 @@ class FileUpload
     {
         if (!empty($_POST['path'])) $this->path = $_POST['path'];
         if (!empty($_POST['autoSub'])) $this->autoSub = $_POST['autoSub'];
+        if (!empty($_POST['host'])) $this->autoSub = $_POST['host'];
 
         if (!$this->createDir()) {
             return false;
@@ -458,6 +459,7 @@ class FileUpload
         }
         $data["path"] = $this->path;
         $data["autoSub"] = $this->autoSub;
+        $data["host"] = $this->host;
         return self::curlUpload($this->remoteUrl, $data, $file, 'file');
     }
 
