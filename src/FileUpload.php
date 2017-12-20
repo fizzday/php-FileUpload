@@ -172,7 +172,7 @@ class FileUpload
             return false;
         }
         $files = $this->format($fieldName);
-        $uploadedFile = [];
+        $uploadedFile = array();
         //验证文件
         if (!empty($files)) {
             foreach ($files as $v) {
@@ -209,7 +209,7 @@ class FileUpload
             return false;
         }
         $_info = pathinfo($filePath);
-        $arr = [];
+        $arr = array();
         $arr['file'] = $filePath;
         $arr['uptime'] = time();
         $arr['fieldname'] = $file['fieldname'];
@@ -263,7 +263,7 @@ class FileUpload
 
             return false;
         }
-        $info = [];
+        $info = array();
         $n = 0;
         foreach ($files as $name => $v) {
             if (is_array($v ['name'])) {
