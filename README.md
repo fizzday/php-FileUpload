@@ -84,3 +84,18 @@ print_r($remote);
     }
 ]
 ```
+## 通过 facade 直接静态调用
+需要安装`fizzday\facades`: `composer require fizzday/facades dev-master`
+### 使用
+```php
+<?php
+
+use Fizzday\FileUpload\FileFacade as File;
+
+$res = File::upload();
+$res = File::path()->type()->upload();
+
+if (!$res) die($up->getError());    // 错误信息
+
+print_r($res);
+```
