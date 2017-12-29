@@ -159,7 +159,6 @@ class FileUpload
     /**
      * 执行上传
      * @param null $fieldName 字段名
-     *
      * @return array|bool
      * @throws Exception
      */
