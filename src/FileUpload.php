@@ -4,42 +4,7 @@ namespace Fizzday\FileUpload;
 
 use Exception;
 
-error_reporting(null);
-
-function successReturn($data = null, $status = 1, $ext = null)
-{
-    $re = array();
-
-    if ($status == 1) {
-        $msg = 'success';
-    } else {
-        if ($data === null) $msg = 'fail';
-        else $msg = $data;
-    }
-
-    $re['status'] = $status;
-    $re['data'] = $data;
-    $re['msg'] = $msg;
-
-    if ($ext) $re['ext'] = $ext;
-
-    return $re;
-}
-
-/**
- * 接口格式化失败返回
- * @param [mixed]       $data       [返回数据或错误信息]
- * @param [int]         $status     [1成功, 2失败, 100验证失败]
- */
-function failReturn($data = '', $status = 2, $ext = '')
-{
-    return successReturn($data, $status, $ext);
-}
-
-function jsonReturn($data = '', $status = 1, $ext = '')
-{
-    return json_encode(successReturn($data, $status, $ext));
-}
+//error_reporting(null);
 
 class FileUpload
 {
@@ -226,7 +191,7 @@ class FileUpload
             }
         }
 
-        return jsonReturn($uploadedFile);
+        return self::jsonReturn($uploadedFile);
     }
 
     /**
@@ -534,6 +499,41 @@ class FileUpload
         curl_close($request);
 
         return $res;
+    }
+
+    static function successReturn($data = null, $status = 1, $ext = null)
+    {
+        $re = array();
+
+        if ($status == 1) {
+            $msg = 'success';
+        } else {
+            if ($data === null) $msg = 'fail';
+            else $msg = $data;
+        }
+
+        $re['status'] = $status;
+        $re['data'] = $data;
+        $re['msg'] = $msg;
+
+        if ($ext) $re['ext'] = $ext;
+
+        return $re;
+    }
+
+    /**
+     * 接口格式化失败返回
+     * @param [mixed]       $data       [返回数据或错误信息]
+     * @param [int]         $status     [1成功, 2失败, 100验证失败]
+     */
+    static function failReturn($data = '', $status = 2, $ext = '')
+    {
+        return self::successReturn($data, $status, $ext);
+    }
+
+    static function jsonReturn($data = '', $status = 1, $ext = '')
+    {
+        return json_encode(successReturn($data, $status, $ext));
     }
 }
 
