@@ -17,9 +17,9 @@ $res = $up
     ->autoSub() // 设置自动子目录
     ->upload(); // 执行上传
 
-if (!$res) echo $up->getError();
+//if (!$res) echo $up->getError();
 
-print_r($res);
+echo($res);
 /*
 [
     {

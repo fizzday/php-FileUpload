@@ -4,6 +4,43 @@ namespace Fizzday\FileUpload;
 
 use Exception;
 
+error_reporting(null);
+
+function successReturn($data = null, $status = 1, $ext = null)
+{
+    $re = array();
+
+    if ($status == 1) {
+        $msg = 'success';
+    } else {
+        if ($data === null) $msg = 'fail';
+        else $msg = $data;
+    }
+
+    $re['status'] = $status;
+    $re['data'] = $data;
+    $re['msg'] = $msg;
+
+    if ($ext) $re['ext'] = $ext;
+
+    return $re;
+}
+
+/**
+ * 接口格式化失败返回
+ * @param [mixed]       $data       [返回数据或错误信息]
+ * @param [int]         $status     [1成功, 2失败, 100验证失败]
+ */
+function failReturn($data = '', $status = 2, $ext = '')
+{
+    return successReturn($data, $status, $ext);
+}
+
+function jsonReturn($data = '', $status = 1, $ext = '')
+{
+    return json_encode(successReturn($data, $status, $ext));
+}
+
 class FileUpload
 {
     //上传类型
@@ -189,7 +226,7 @@ class FileUpload
             }
         }
 
-        return json_encode($uploadedFile);
+        return jsonReturn($uploadedFile);
     }
 
     /**
@@ -499,12 +536,7 @@ class FileUpload
         return $res;
     }
 }
-//$file = new FizzFile();
-//$res = $file->path(BASE.'Data/img_temp')->upload();
-//if (!$res) die($file->getError());
-//// 上传远程服务器
-//$remote = $file->localStorage(true)
-//    ->remoteUrl('http://imgalpha.wochacha.com/backend/receiveFile.php')
-//    ->remoteDir('adver_images/')
-//    ->remoteUpload($res[0]['path']);
-//print_r($remote);
+
+//$file = new FileUpload();
+//
+//echo $file->path('hccz')->host('http://upload-cfda.wochacha.com')->autoSub('date')->upload();
