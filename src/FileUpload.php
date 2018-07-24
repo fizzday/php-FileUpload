@@ -157,10 +157,8 @@ class FileUpload
     }
 
     /**
-     * 上传
-     *
+     * 执行上传
      * @param null $fieldName 字段名
-     *
      * @return array|bool
      * @throws Exception
      */
@@ -492,6 +490,7 @@ class FileUpload
 
         curl_setopt($request, CURLOPT_POST, true);
         curl_setopt($request, CURLOPT_HTTPHEADER, $header); //设置头信息的地方
+        curl_setopt($request, CURLOPT_TIMEOUT,30);   //只需要设置一个秒的数量就可以
 
         curl_setopt($request, CURLOPT_POSTFIELDS, $data);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
