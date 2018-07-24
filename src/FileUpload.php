@@ -459,7 +459,7 @@ class FileUpload
             $this->error = '远程地址不能为空';
             return false;
         }
-        $data["path"] = $this->path;
+        $data["dir"] = $this->path;
         $data["autoSub"] = $this->autoSub;
         $data["host"] = $this->host;
         return self::curlUpload($this->remoteUrl, $data, $file, 'file');
@@ -497,7 +497,7 @@ class FileUpload
         curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
         $res = curl_exec($request);
         curl_close($request);
-
+//die($res);die;
         return $res;
     }
 
