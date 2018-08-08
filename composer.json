@@ -9,9 +9,6 @@
             "email": "fizzday@yeah.net"
         }
     ],
-    "require": {
-        "fizzday/fizzhelper": "dev-master"
-    },
     "autoload": {
         "psr-4": {
             "Fizzday\\FileUpload\\": "src/"
