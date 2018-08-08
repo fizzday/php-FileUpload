@@ -533,7 +533,7 @@ class FileUpload
 
     static function jsonReturn($data = '', $status = 1, $ext = '')
     {
-        return json_encode(successReturn($data, $status, $ext));
+        return json_encode(self::successReturn($data, $status, $ext));
     }
 }
 
