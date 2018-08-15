@@ -9,7 +9,7 @@ use Exception;
 class FileUpload
 {
     //上传类型
-    protected $type = 'jpg,jpeg,gif,png,pdf,bmp,zip,psd,tif';
+    protected $type = 'jpg,jpeg,gif,png,pdf,bmp,zip,psd,tif,txt,rar,doc,docs,xls,xlsx,ppt,pptx,csv';
     //上传文件大小
     protected $size = 10000;
     //上传路径
@@ -485,7 +485,7 @@ class FileUpload
             }
         }
 
-        $header = array('token:JxRaZezavm3HXM3d9pWnYiqqQC1SJbsU');
+//        $header = array('token:JxRaZezavm3HXM3d9pWnYiqqQC1SJbsU');
 
         $request = curl_init($url);
 
