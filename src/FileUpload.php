@@ -11,7 +11,7 @@ class FileUpload
     //上传类型
     protected $type = 'jpg,jpeg,gif,png,pdf,bmp,zip,psd,tif,txt,rar,doc,docs,xls,xlsx,ppt,pptx,csv';
     //上传文件大小
-    protected $size = 10000;
+    protected $size = 20000;
     //上传路径
     protected $path = '';
     //是否自动文件目录
@@ -20,6 +20,8 @@ class FileUpload
     protected $subPath = '';
     //错误信息
     protected $error;
+    // 压缩
+    protected $optimize = true;
 
     /*************
      * 远程服务器 *
@@ -103,12 +105,23 @@ class FileUpload
 
     /**
      * 是否开启自动目录
-     * @param bool $auto (date, hash(sha1) ...)
+     * @param string $auto (date, hash(sha1) ...)
      * @return $this
      */
     public function autoSub($auto = 'date')
     {
         $this->autoSub = $auto;
+        return $this;
+    }
+
+    /**
+     * 是否压缩
+     * @param bool $optimize default true
+     * @return $this
+     */
+    public function optimize($optimize = true)
+    {
+        $this->optimize = $optimize;
         return $this;
     }
 
@@ -189,24 +202,30 @@ class FileUpload
             }
         }
 
-        return self::jsonReturn($uploadedFile);
+        return self::successReturn($uploadedFile);
     }
 
     /**
      * 储存文件
-     *
      * @param string $file 储存的文件
-     *
      * @return boolean
      */
     private function save($file)
     {
-        $fileName = $this->getMicroTimeStr() . "." . $file['ext'];
+        $fileName = $this->getMicroTimeStr(). mt_rand(1000,9999) . "." . $file['ext'];
         $filePath = $this->path . '/' . $fileName;
         if (!move_uploaded_file($file ['tmp_name'], $filePath) && is_file($filePath)) {
             $this->error('移动临时文件失败');
-
             return false;
+        }
+        // 压缩
+//        var_dump($this->optimize);
+        if ($this->optimize) {
+            $dstName = $this->getMicroTimeStr(15). mt_rand(100,999) . "." . $file['ext'];
+            $dstPath = $this->path . '/' . $dstName;
+            self::make_thumb($filePath, $dstPath);
+//            unlink($filePath);
+            $filePath = $dstPath;
         }
         $_info = pathinfo($filePath);
         $arr = array();
@@ -491,7 +510,7 @@ class FileUpload
 
         curl_setopt($request, CURLOPT_POST, true);
         curl_setopt($request, CURLOPT_HTTPHEADER, $header); //设置头信息的地方
-        curl_setopt($request, CURLOPT_TIMEOUT,30);   //只需要设置一个秒的数量就可以
+        curl_setopt($request, CURLOPT_TIMEOUT, 30);   //只需要设置一个秒的数量就可以
 
         curl_setopt($request, CURLOPT_POSTFIELDS, $data);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
@@ -535,8 +554,120 @@ class FileUpload
     {
         return json_encode(self::successReturn($data, $status, $ext));
     }
-}
 
+    /**
+     * 等比例生成缩略图
+     *
+     * @param  String $srcFile 原始文件路径
+     * @param  String $dstFile 目标文件路径
+     * @return  Boolean  生成成功则返回true，否则返回false
+     */
+    static function make_thumb($srcFile, $dstFile)
+    {
+        $isJpeg = false;
+        $isGif = false;
+        $isPng = false;
+        try {
+            if ($size = getimagesize($srcFile)) {
+                $srcWidth = $size[0];
+                $srcHeight = $size[1];
+                $mime = $size['mime'];
+                switch ($mime) {
+                    case 'image/jpeg';
+                        $isJpeg = true;
+                        break;
+                    case 'image/gif';
+                        $isGif = true;
+                        break;
+                    case 'image/png';
+                        $isPng = true;
+                        break;
+                    default:
+                        // 格式之外的, 不压缩
+                        // var_dump($mime);
+                        copy($srcFile, $dstFile);
+                        return true;
+                        break;
+                }
+
+                // 如果是彩虹码, 就不压缩
+                if ($srcHeight == 300 && $srcWidth == 580) {
+                    copy($srcFile, $dstFile);
+                    return true;
+                }
+                // 如果是宽度大于3840的, 就按照宽度3072进行缩放
+                $maxPx = 1920;
+                if ($srcWidth > $maxPx || $srcHeight > $maxPx) {
+                    if ($srcWidth > $srcHeight) {
+                        $maxWidth = $maxPx;
+                        $maxHeight = $maxWidth * $srcHeight / $srcWidth;
+                    } else {
+                        $maxHeight = $maxPx;
+                        $maxWidth = $maxHeight * $srcWidth / $srcHeight;
+                    }
+                } else {
+                    $maxWidth = $srcWidth;
+                    $maxHeight = $srcHeight;
+                }
+
+                //header("Content-type:$mime");
+                // $arr =  self::getNewSize($maxWidth, $maxHeight, $srcWidth, $srcHeight);
+                // $thumbWidth = $arr['width'];
+                // $thumbHeight = $arr['height'];
+                $thumbWidth = $maxWidth;
+                $thumbHeight = $maxHeight;
+                // echo $thumbWidth."x".$thumbHeight;die;
+                if ($isJpeg) {
+                    $dstThumbPic = imagecreatetruecolor($thumbWidth, $thumbHeight);
+                    $srcPic = imagecreatefromjpeg($srcFile);
+                    imagecopyresampled($dstThumbPic, $srcPic, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $srcWidth, $srcHeight);
+                    //imagecopyresized($dstThumbPic, $srcPic, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $srcWidth, $srcHeight);
+                    imagejpeg($dstThumbPic, $dstFile);
+                    imagedestroy($dstThumbPic);
+                    imagedestroy($srcPic);
+                } elseif ($isGif) {
+                    //$dstThumbPic = imagecreate($thumbWidth, $thumbHeight);  /* attention */
+                    $dstThumbPic = imagecreatetruecolor($thumbWidth, $thumbHeight);  /* attention */
+                    //创建透明画布
+                    imagealphablending($dstThumbPic, true);
+                    imagesavealpha($dstThumbPic, true);
+                    $trans_colour = imagecolorallocatealpha($dstThumbPic, 0, 0, 0, 127);
+                    imagefill($dstThumbPic, 0, 0, $trans_colour);
+                    $srcPic = imagecreatefromgif($srcFile);
+                    imagecopyresampled($dstThumbPic, $srcPic, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $srcWidth, $srcHeight);
+                    //imagecopyresized($dstThumbPic, $srcPic, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $srcWidth, $srcHeight);
+                    imagegif($dstThumbPic, $dstFile);
+                    imagedestroy($dstThumbPic);
+                    imagedestroy($srcPic);
+                } elseif ($isPng) {
+                    $dstThumbPic = imagecreatetruecolor($thumbWidth, $thumbHeight);
+                    //创建透明画布
+                    imagealphablending($dstThumbPic, true);
+                    imagesavealpha($dstThumbPic, true);
+                    $trans_colour = imagecolorallocatealpha($dstThumbPic, 0, 0, 0, 127);
+                    imagefill($dstThumbPic, 0, 0, $trans_colour);
+                    $srcPic = imagecreatefrompng($srcFile);
+                    imagecopyresampled($dstThumbPic, $srcPic, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $srcWidth, $srcHeight);
+                    //imagecopyresized($dstThumbPic, $srcPic, 0, 0, 0, 0, $thumbWidth, $thumbHeight, $srcWidth, $srcHeight);
+                    imagepng($dstThumbPic, $dstFile);
+                    imagedestroy($dstThumbPic);
+                    imagedestroy($srcPic);
+                } else {
+                    copy($srcFile, $dstFile);
+                    return true;
+                }
+
+                return true;
+            }
+        } catch (Exception $e) {
+            echo $e->getMessage();
+        }
+
+        // 格式之外的, 不压缩
+        copy($srcFile, $dstFile);
+        return $mime;
+    }
+}
 //$file = new FileUpload();
 //
 //echo $file->path('hccz')->host('http://upload-cfda.wochacha.com')->autoSub('date')->upload();
